@@ -13,11 +13,11 @@ COPY ./app ./app
 COPY ./alembic.ini .
 COPY ./migrations ./migrations
 
-COPY ./backend/entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+COPY ./backend/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENV PYTHONPATH=/app
 
 EXPOSE 8000
 
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]

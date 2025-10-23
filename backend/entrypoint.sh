@@ -6,10 +6,13 @@ alembic upgrade head
 celery -A app.celery_app worker --loglevel=info -Q backtest &
 CELERY_PID=$!
 
-uvicorn app.main:app --host 0.0.0.0 --port 8000 &
-UVICORN_PID=$!
+trap "kill $CELERY_PID" TERM INT
 
-trap "kill $CELERY_PID $UVICORN_PID" TERM INT
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+EXIT_CODE=$?
 
-wait $UVICORN_PID
+kill $CELERY_PID >/dev/null 2>&1 || true
+wait $CELERY_PID >/dev/null 2>&1 || true
+
+exit $EXIT_CODE
 
