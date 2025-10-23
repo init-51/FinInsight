@@ -26,6 +26,18 @@ class StockPrice(BaseModel):
     close: float
 
 
+def _parse_date(value: str) -> datetime:
+    """Parse incoming date strings in multiple common formats."""
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
+        try:
+            return datetime.strptime(value, fmt)
+        except ValueError:
+            continue
+    raise ValueError(
+        f"Invalid date format: {value}. Expected YYYY-MM-DD or MM/DD/YYYY"
+    )
+
+
 @router.get(
     "/price/{ticker}",
     response_model=List[StockPrice],
@@ -56,14 +68,17 @@ async def get_stock_price(
         if not start_date or not end_date:
             end = datetime.now()
             start = end - timedelta(days=90)
-            start_date = start.strftime("%Y-%m-%d")
-            end_date = end.strftime("%Y-%m-%d")
+        else:
+            start = _parse_date(start_date)
+            end = _parse_date(end_date)
 
-        # Fetch data from yfinance
+        start_date_str = start.strftime("%Y-%m-%d")
+        end_date_str = end.strftime("%Y-%m-%d")
+
         df = yf.download(
             ticker,
-            start=start_date,
-            end=end_date,
+            start=start_date_str,
+            end=end_date_str,
             progress=False
         )
 
