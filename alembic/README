@@ -1,0 +1,18 @@
+Alembic migration environment for FinInsight.
+
+- Uses DATABASE_URL from .env via app.config.Settings (pydantic-settings)
+- Imports all models in app/models/ for autogenerate
+- Compatible with SQLAlchemy 2.0 and PostgreSQL
+
+# Usage
+
+1. Create a new migration (autogenerate):
+   alembic revision --autogenerate -m "init"
+
+2. Apply migrations:
+   alembic upgrade head
+
+# Notes
+- Ensure your .env is present and DATABASE_URL is set.
+- All models in app/models/ are imported automatically for schema detection.
+- See alembic/env.py for details.

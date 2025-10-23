@@ -1,0 +1,79 @@
+services:
+  fininsight-db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  fininsight-redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  fininsight-api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: always
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      fininsight-db:
+        condition: service_healthy
+      fininsight-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  fininsight-celery:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: always
+    command: celery -A app.celery_app worker --loglevel=info -Q backtest
+    env_file:
+      - .env
+    depends_on:
+      fininsight-db:
+        condition: service_healthy
+      fininsight-redis:
+        condition: service_healthy
+
+  fininsight-frontend:
+    build:
+      context: ./frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - fininsight-api
+
+volumes:
+  pgdata:
