@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "test": "echo \"No frontend tests defined\" && exit 0",
     "build": "vite build",
     "preview": "vite preview"
   },
