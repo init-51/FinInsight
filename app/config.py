@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     ENV: str = "development"
+    ALLOWED_ORIGINS: str = ""
 
     class Config:
         env_file = ".env"

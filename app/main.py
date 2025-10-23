@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.logging_config import setup_logging
 from app.routers import data, jobs
+from app.config import settings
 
 setup_logging()
 
@@ -20,8 +21,11 @@ app = FastAPI(
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    # Local development origins; replace with production domains when deploying
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=[
+        origin.strip()
+        for origin in settings.ALLOWED_ORIGINS.split(",")
+        if origin.strip()
+    ] or ["http://localhost:3000", "http://localhost:3001"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
