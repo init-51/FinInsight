@@ -13,7 +13,7 @@ COPY ./app ./app
 COPY ./alembic.ini .
 COPY ./migrations ./migrations
 
-COPY entrypoint.sh ./entrypoint.sh
+COPY ./backend/entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh
 
 ENV PYTHONPATH=/app
